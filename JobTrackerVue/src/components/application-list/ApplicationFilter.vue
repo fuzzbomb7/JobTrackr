@@ -34,8 +34,8 @@
 </template>
 
 <script setup lang="ts">
-import type { FilterUpdatePayload } from '@/models'
-import StatusSelect from './StatusSelect.vue'
+import type { FilterUpdatePayload } from '@/shared/models'
+import StatusSelect from '../shared/StatusSelect.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { ref, defineEmits } from 'vue'

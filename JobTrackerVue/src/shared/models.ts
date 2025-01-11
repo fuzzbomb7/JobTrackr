@@ -36,6 +36,7 @@ export interface StatusReportModel {
   offer: number
   accepted: number
   success: boolean
+  total: number
 }
 
 // Status select dropdown
@@ -56,7 +57,7 @@ export class StatusId {
 
 export const Statuses: StatusSelectModel[] = [
   { Value: StatusId.Applied, Text: 'Applied' },
-  { Value: StatusId.Rejected, Text: 'Rejected / No Response' },
+  { Value: StatusId.Rejected, Text: 'Rejected' },
   { Value: StatusId.PhoneScreen, Text: 'Phone Screen' },
   { Value: StatusId.Interviewing, Text: 'Interviewing' },
   { Value: StatusId.NoOffer, Text: 'No Offer' },

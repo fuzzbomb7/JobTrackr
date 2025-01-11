@@ -2,10 +2,17 @@
   <div class="bg-yellow-50 border rounded-lg mx-auto p-5 mt-4">
     <div class="grid grid-cols-2 gap-4">
       <div id="report">
-        <p>{{ report?.applied ?? 0 }} Jobs <ApplicationStatus :status="StatusId.Applied" /> For</p>
+        <p>
+          {{ report?.total ?? 0 }} Total Jobs <ApplicationStatus :status="StatusId.Applied" /> For
+        </p>
         <p>
           {{ report?.rejected ?? 0 }} Applications
           <ApplicationStatus :status="StatusId.Rejected" />
+        </p>
+        <p>&nbsp;</p>
+        <p>
+          {{ report?.applied ?? 0 }} Jobs Recently
+          <ApplicationStatus :status="StatusId.Applied" /> For
         </p>
         <p>
           {{ report?.screened ?? 0 }} Applications with Initial
@@ -20,7 +27,7 @@
           <ApplicationStatus :status="StatusId.NoOffer" />
         </p>
         <p>
-          {{ report?.offer ?? 0 }} Job(s)
+          {{ report?.offer ?? 0 }} Jobs with
           <ApplicationStatus :status="StatusId.Offer" />
         </p>
         <p>{{ report?.accepted ?? 0 }} Job <ApplicationStatus :status="StatusId.Accepted" />!</p>
@@ -68,13 +75,13 @@
 </template>
 
 <script setup lang="ts">
-import type { StatusReportModel } from '@/models'
-import { StatusId } from '@/models'
+import type { StatusReportModel } from '@/shared/models'
+import { StatusId } from '@/shared/models'
 import { onMounted, ref } from 'vue'
-import ApplicationStatus from './ApplicationStatus.vue'
+import ApplicationStatus from './shared/ApplicationStatus.vue'
 import { Pie } from 'vue-chartjs'
 import { Chart as ChartJS, registerables } from 'chart.js'
-import { getReport } from '@/api-service'
+import { getReport } from '@/shared/api-service'
 
 ChartJS.register(...registerables)
 

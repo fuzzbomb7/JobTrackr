@@ -20,8 +20,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Statuses } from '../models.ts'
-import { statusColor } from '@/status-color.ts'
+import { Statuses } from '../../shared/models.ts'
+import { statusColor } from '@/shared/status-color.ts'
 
 const props = defineProps<{
   label: string // Select label

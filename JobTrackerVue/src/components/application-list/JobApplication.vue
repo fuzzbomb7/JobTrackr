@@ -2,16 +2,16 @@
   <div class="collapse collapse-arrow mb-2 border bg-yellow-50">
     <input type="radio" name="application-list" />
     <div class="collapse-title">
-      <span class="font-semibold text-lg">{{ application.jobTitle }}</span>
-      <span class="float-right mr-2 mt-1"><ApplicationStatus :status="status" /></span>
+      <span class="font-semibold text-md">{{ application.jobTitle }}</span>
+      <div class="float-right"><ApplicationStatus :status="status" /></div>
       <div class="text-base font-normal text-gray-500">
         {{ application.company }}
       </div>
     </div>
     <div class="collapse-content">
       <div class="divider mt-0"></div>
-      <div class="flex">
-        <div id="flex-col-1" class="grow">
+      <div class="sm:flex">
+        <div id="flex-col-1" class="sm:grow">
           <div
             class="flex gap-10 mb-5"
             v-if="
@@ -33,12 +33,10 @@
           </div>
           <div v-if="application.jobListingUrl !== ''">
             <div class="text-sm font-medium text-gray-500">Job Description URL</div>
-            <a :href="application.jobListingUrl" class="link link-info">{{
-              application.jobListingUrl
-            }}</a>
+            <a :href="application.jobListingUrl" class="link link-info">{{ formatJobUrl }}</a>
           </div>
         </div>
-        <div id="flex-col-2">
+        <div id="flex-col-2" class="mt-4 sm:mt-0">
           <div>
             <div>
               <StatusSelect
@@ -109,10 +107,10 @@
 
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue'
-import { StatusId, type ApplicationModel } from '../models.ts'
-import ApplicationStatus from './ApplicationStatus.vue'
-import StatusSelect from './StatusSelect.vue'
-import { deleteApplication, patchApplication } from '@/api-service.ts'
+import { StatusId, type ApplicationModel } from '../../shared/models.ts'
+import ApplicationStatus from '../shared/ApplicationStatus.vue'
+import StatusSelect from '../shared/StatusSelect.vue'
+import { deleteApplication, patchApplication } from '../../shared/api-service.ts'
 
 // Incoming application model
 const application = defineProps<ApplicationModel>()
@@ -135,6 +133,10 @@ const statusChange = ref<string>('')
 const status = computed(
   () => application.statusHistory[application.statusHistory.length - 1].status,
 )
+
+const formatJobUrl = computed(() => {
+  return application.jobListingUrl.match(/^.+\//)?.[0]?.concat('...')
+})
 
 // Modal references
 const congratulationsModal = useTemplateRef('congratulationsModal')

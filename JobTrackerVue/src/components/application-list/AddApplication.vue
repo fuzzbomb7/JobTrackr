@@ -1,6 +1,6 @@
 <template>
   <div class="grid grid-cols-4 gap-3">
-    <div class="col-span-2">
+    <div class="sm:col-span-2 col-span-4">
       <div class="text-sm text-gray-500 mb-1 ml-3">
         Job Title <span class="text-red-500">*</span>
       </div>
@@ -10,7 +10,7 @@
         v-model="newApplication.jobTitle"
       />
     </div>
-    <div class="col-span-2">
+    <div class="sm:col-span-2 col-span-4">
       <div class="text-sm text-gray-500 mb-1 ml-3">Company <span class="text-red-500">*</span></div>
       <input
         type="text"
@@ -18,7 +18,7 @@
         v-model="newApplication.company"
       />
     </div>
-    <div class="col-span-2">
+    <div class="sm:col-span-2 col-span-4">
       <div class="text-sm text-gray-500 mb-1 ml-3">
         Application Date <span class="text-red-500">*</span>
       </div>
@@ -29,7 +29,7 @@
         v-model="newApplication.applicationDate"
       />
     </div>
-    <div class="col-span-2">
+    <div class="sm:col-span-2 col-span-4">
       <div class="text-sm text-gray-500 mb-1 ml-3">Recruiter Name</div>
       <input
         type="text"
@@ -37,7 +37,7 @@
         v-model="newApplication.recruiter"
       />
     </div>
-    <div class="col-span-2">
+    <div class="sm:col-span-2 col-span-4">
       <div class="text-sm text-gray-500 mb-1 ml-3">Recruiter Email</div>
       <input
         type="email"
@@ -45,7 +45,7 @@
         v-model="newApplication.email"
       />
     </div>
-    <div class="col-span-2">
+    <div class="sm:col-span-2 col-span-4">
       <div class="text-sm text-gray-500 mb-1 ml-3">Phone</div>
       <input
         type="tel"
@@ -68,10 +68,10 @@
         v-model="newApplication.jobDescription"
       ></textarea>
     </div>
-    <div class="flex items-center justify-end">
+    <div class="flex items-center">
       <button class="btn btn-primary" @click="submitNewApplication">Add Application</button>
     </div>
-    <div class="col-span-3 ml-5">
+    <div class="sm:col-span-3 col-span-4 sm:ml-5">
       <p v-for="error in errorMessages" :key="error" class="text-red-500">
         {{ error }}
       </p>
@@ -80,10 +80,10 @@
 </template>
 
 <script setup lang="ts">
-import type { AddApplicationModel } from '@/models'
+import type { AddApplicationModel } from '@/shared/models'
 import { ref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
-import { required, email, url, numeric, helpers } from '@vuelidate/validators'
+import { required, email, url, helpers } from '@vuelidate/validators'
 
 const emit = defineEmits<{
   addApplication: [application: AddApplicationModel]
@@ -108,9 +108,11 @@ const newApplication = ref<AddApplicationModel>({
 const errorMessages = ref<string[]>([])
 
 // Vuelidate validation rules
+const phone = helpers.regex(/[\d-().]+/)
+
 const validationRules = {
   email: { email: helpers.withMessage('Please enter a valid email address', email) },
-  phone: { numeric: helpers.withMessage('Please enter a valid phone number', numeric) },
+  phone: { phone: helpers.withMessage('Please enter a valid phone number', phone) },
   jobListingUrl: { url: helpers.withMessage('Please enter a valid URL', url) },
   applicationDate: { required },
   jobTitle: { required: helpers.withMessage('Please enter a job title', required) },

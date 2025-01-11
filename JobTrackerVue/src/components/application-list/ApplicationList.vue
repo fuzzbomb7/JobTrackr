@@ -18,7 +18,7 @@
         </div>
       </div>
       <template v-if="applications === undefined || applications.length === 0">
-        <div v-for="n in 6" :key="n" class="skeleton h-24 w-full mb-2"><!--spooky skeletons--></div>
+        <LoadingSkeleton />
       </template>
       <template v-else-if="filteredApplications === undefined || filteredApplications.length === 0">
         <div class="text-center text-gray-500">No applications found</div>
@@ -54,11 +54,16 @@
 
 <script setup lang="ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
-import type { AddApplicationModel, ApplicationModel, FilterUpdatePayload } from '../models.ts'
+import type {
+  AddApplicationModel,
+  ApplicationModel,
+  FilterUpdatePayload,
+} from '../../shared/models.ts'
 import JobApplication from './JobApplication.vue'
 import AddApplication from './AddApplication.vue'
 import ApplicationFilter from './ApplicationFilter.vue'
-import { getApplications as getApplicationsApi, postApplication } from '../api-service.ts'
+import { getApplications as getApplicationsApi, postApplication } from '../../shared/api-service.ts'
+import LoadingSkeleton from '../shared/LoadingSkeleton.vue'
 
 const applications = ref<ApplicationModel[]>([])
 const filteredApplications = ref<ApplicationModel[]>()

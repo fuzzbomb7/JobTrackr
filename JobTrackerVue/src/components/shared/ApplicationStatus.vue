@@ -4,8 +4,8 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
-import { statusColor } from '@/status-color.ts'
-import { Statuses } from '@/models'
+import { statusColor } from '@/shared/status-color'
+import { Statuses } from '@/shared/models'
 
 const prop = defineProps<{ status: string }>()
 
