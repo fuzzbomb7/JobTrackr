@@ -17,11 +17,11 @@
           </label>
         </div>
       </div>
-      <template v-if="applications === undefined || applications.length === 0">
+      <template v-if="applications === undefined">
         <LoadingSkeleton />
       </template>
       <template v-else-if="filteredApplications === undefined || filteredApplications.length === 0">
-        <div class="text-center text-gray-500">No applications found</div>
+        <div class="text-center text-gray-500 mb-3">No applications found</div>
       </template>
       <JobApplication
         v-else

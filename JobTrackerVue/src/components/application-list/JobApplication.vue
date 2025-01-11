@@ -81,7 +81,21 @@
       </form>
       <h3 class="text-lg font-bold mb-2">Congratulations!</h3>
       <span class="">Best of luck at your new job!</span>
-      <span class="float-right"><img src="../assets/icons8-confetti-64.png" /></span>
+      <span class="float-right"><img src="../../assets/icons8-confetti-64.png" /></span>
+    </div>
+  </dialog>
+
+  <!-- Delete confirmation modal -->
+  <dialog id="deleteModal" ref="deleteModal" class="modal">
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <h3 class="text-lg font-bold mb-2">Confirm Delete</h3>
+      <span class="">Delete job application for {{ application.company }} - {{ application.jobTitle }}?</span>
+      <div class="flex justify-end mt-4">
+        <button class="btn btn-error" @click="confirmDeleteApplication">Delete</button>
+      </div>
     </div>
   </dialog>
 
@@ -141,6 +155,7 @@ const formatJobUrl = computed(() => {
 // Modal references
 const congratulationsModal = useTemplateRef('congratulationsModal')
 const statusDateModal = useTemplateRef('statusDateModal')
+const deleteModal = useTemplateRef('deleteModal')
 
 // Status change
 function onStatusChange(newStatus: string) {
@@ -179,6 +194,11 @@ function updateStatus(newStatus: string, newStatusDate?: string) {
 
 // Delete application
 function onDeleteApplication() {
+  deleteModal.value?.showModal()
+}
+
+function confirmDeleteApplication() {
+  deleteModal.value?.close()
   deleteApplication(application.id)
     .then(() => {
       emit('updateApplications')

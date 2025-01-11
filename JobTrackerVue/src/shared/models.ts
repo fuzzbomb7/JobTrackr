@@ -20,6 +20,7 @@ export interface AddApplicationModel {
   jobListingUrl: string
   jobDescription: string
   applicationDate: string
+  userId: string
 }
 
 export interface StatusModel {
@@ -56,13 +57,13 @@ export class StatusId {
 }
 
 export const Statuses: StatusSelectModel[] = [
-  { Value: StatusId.Applied, Text: 'Applied' },
-  { Value: StatusId.Rejected, Text: 'Rejected' },
-  { Value: StatusId.PhoneScreen, Text: 'Phone Screen' },
-  { Value: StatusId.Interviewing, Text: 'Interviewing' },
-  { Value: StatusId.NoOffer, Text: 'No Offer' },
-  { Value: StatusId.Offer, Text: 'Offer Made' },
-  { Value: StatusId.Accepted, Text: 'Offer Accepted' },
+  { Value: StatusId.Applied, Text: 'Applied' }, //0
+  { Value: StatusId.Rejected, Text: 'Rejected' }, //1
+  { Value: StatusId.PhoneScreen, Text: 'Phone Screen' }, //2
+  { Value: StatusId.Interviewing, Text: 'Interviewing' }, //3
+  { Value: StatusId.NoOffer, Text: 'No Offer' }, //4
+  { Value: StatusId.Offer, Text: 'Offer Made' }, //5
+  { Value: StatusId.Accepted, Text: 'Offer Accepted' }, //6
 ]
 
 export interface FilterUpdatePayload {

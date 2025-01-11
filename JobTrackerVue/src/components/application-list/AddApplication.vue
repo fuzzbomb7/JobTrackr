@@ -81,9 +81,14 @@
 
 <script setup lang="ts">
 import type { AddApplicationModel } from '@/shared/models'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, email, url, helpers } from '@vuelidate/validators'
+import { useAuth0 } from '@auth0/auth0-vue'
+
+// Authenticated user ID
+const { user } = useAuth0()
+const userId = computed(() => user.value?.sub !== undefined ? user.value?.sub : '')
 
 const emit = defineEmits<{
   addApplication: [application: AddApplicationModel]
@@ -102,6 +107,7 @@ const newApplication = ref<AddApplicationModel>({
   jobListingUrl: '',
   jobDescription: '',
   applicationDate: maxDate,
+  userId: userId.value,
 })
 
 // Error messages
@@ -142,6 +148,7 @@ async function submitNewApplication() {
     jobListingUrl: '',
     jobDescription: '',
     applicationDate: maxDate,
+    userId: userId.value,
   }
 
   v$.value.$reset()

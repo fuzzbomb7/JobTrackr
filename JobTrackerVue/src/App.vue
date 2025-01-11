@@ -36,8 +36,7 @@ const logOut = () => {
                   <span class="font-bold mb-1">{{ user?.given_name }}</span>
                 </summary>
                 <ul class="menu bg-base-200 z-10">
-                  <li><a>TOS/Privacy</a></li>
-                  <li><a>Contact Us</a></li>
+                  <li><router-link to="/privacy">TOS/Privacy</router-link></li>
                   <li><a @click.stop="logOut">Logout</a></li>
                 </ul>
               </details>

@@ -19,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Statuses } from '../../shared/models.ts'
+import { computed, ref } from 'vue'
+import { Statuses, StatusId } from '../../shared/models.ts'
 import { statusColor } from '@/shared/status-color.ts'
 
 const props = defineProps<{
@@ -37,15 +37,34 @@ const emit = defineEmits<{
 const selectedStatus = ref<string>('')
 const status = defineModel()
 
-// Remove 'Applied' status for Update Status select
-const statusList = props.isFilter ? Statuses : Statuses.slice(1)
+// For filtering, show all statuses
+// For update, show relevant statuses based on current status
+const statusList = computed(() => {
+  if (props.isFilter) return Statuses
+  else {
+    switch (props.currentStatus) {
+      case StatusId.Applied:
+        return [Statuses[1], Statuses[2], Statuses[3]]
+      case StatusId.Rejected:
+        return [Statuses[2], Statuses[3]]
+      case StatusId.PhoneScreen:
+        return [Statuses[1], Statuses[3]]
+      case StatusId.Interviewing:
+        return [Statuses[4], Statuses[5]]
+      case StatusId.NoOffer:
+        return [Statuses[5]]
+      case StatusId.Offer:
+        return [Statuses[6]]
+      case StatusId.Accepted:
+        return []
+    }
+    return Statuses
+  }
+})
 
 // On status change
 const onStatusChange = (statusChange: string) => {
-  if (statusChange === props.currentStatus) {
-    selectedStatus.value = ''
-    return
-  }
+  selectedStatus.value = ''
   status.value = statusChange
   emit('statusUpdate', statusChange)
 }

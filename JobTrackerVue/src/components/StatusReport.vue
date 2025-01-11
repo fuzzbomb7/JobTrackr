@@ -1,7 +1,7 @@
 <template>
   <div class="bg-yellow-50 border rounded-lg mx-auto p-5 mt-4">
     <div class="grid grid-cols-2 gap-4">
-      <div id="report">
+      <div id="report" class="col-span-2 sm:col-span-1">
         <p>
           {{ report?.total ?? 0 }} Total Jobs <ApplicationStatus :status="StatusId.Applied" /> For
         </p>
