@@ -1,6 +1,6 @@
-﻿using JobTrackrApi.Model;
+﻿using JobTrackrApi.Data;
+using JobTrackrApi.Model;
 using Mapster;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -12,41 +12,43 @@ namespace JobTrackrApi
 		public static void Map(WebApplication app)
 		{
 			// Get all applications
-			app.MapGet("/Applications", async (JobTrackrContext db, ClaimsPrincipal user) =>
+			app.MapGet("/Applications", async (ClaimsPrincipal user, [FromServices] ApplyTrackContext cosmos) =>
 			{
 				var userId = user.Identity?.Name;
 
-				var applications = await db.JobApplications.Where(a => a.UserId == userId)
-					.Include(a => a.StatusHistories).ToListAsync();
+				var applications = await cosmos.GetApplicationsAsync(userId!);
 
 				// Sort status history by date, then sort applications by last status date
-				applications.ForEach(applications => applications.StatusHistories = applications.StatusHistories.OrderBy(o => o.Date).ToList());
-				applications = applications.OrderBy(a => a.StatusHistories.Last().Date).ToList();
+				applications.ForEach(applications => applications.statusHistory = applications.statusHistory.OrderBy(o => o.date).ToList());
+				applications = applications.OrderBy(a => a.statusHistory.Last().date).ToList();
 
 				TypeAdapterConfig<StatusHistory, StatusHistoryModel>.NewConfig()
-					.Map(dest => dest.Status, src => src.StatusId)
-					.Map(dest => dest.Date, src => src.Date.ToString("yyyy-MM-dd"));
+					.Map(dest => dest.date, src => src.date.ToString("yyyy-MM-dd"));
 
 				TypeAdapterConfig<JobApplication, JobApplicationModel>.NewConfig()
-					.Map(dest => dest.StatusHistory, src => src.StatusHistories.Adapt<List<StatusHistoryModel>>());
+					.Map(dest => dest.statusHistory, src => src.statusHistory.Adapt<List<StatusHistoryModel>>());
 
 				var applicationsModel = applications.Adapt<List<JobApplicationModel>>();
 
 				return TypedResults.Ok(applicationsModel);
 			}).RequireAuthorization();
 
+
 			// Add application
-			app.MapPost("/Application", async (AddJobApplicationModel application, [FromServices] JobTrackrContext db, ClaimsPrincipal user) =>
+			app.MapPost("/Application", async (AddJobApplicationModel application, ClaimsPrincipal user,
+				[FromServices] ApplyTrackContext cosmos) =>
 			{
 				var userId = user.Identity?.Name;
-				application.UserId = userId!;
 
 				try
 				{
 					var jobApplication = application.Adapt<JobApplication>();
-					jobApplication.StatusHistories.Add(new StatusHistory { StatusId = ApplicationStatus.Applied, Date = DateTime.Parse(application.ApplicationDate) });
-					db.JobApplications.Add(jobApplication);
-					await db.SaveChangesAsync();
+
+					jobApplication.id = Guid.NewGuid();
+					jobApplication.userId = userId!;
+					jobApplication.statusHistory.Add(new StatusHistory { status = ApplicationStatus.Applied, date = DateTime.Parse(application.applicationDate) });
+
+					await cosmos.AddApplicationAsync(jobApplication);
 				}
 				catch (Exception)
 				{
@@ -56,19 +58,17 @@ namespace JobTrackrApi
 				
 			}).RequireAuthorization();
 
+
 			// Add application status
-			app.MapPatch("/Application/{id}/{status}", async (int id, string status, string? date, JobTrackrContext db, ClaimsPrincipal user) =>
+			app.MapPatch("/Application/{id}/{status}", async (Guid id, string status, string? date,
+				ClaimsPrincipal user, [FromServices] ApplyTrackContext cosmos) =>
 			{
 				var userId = user.Identity?.Name;
 
 				try
 				{
-					var application = await db.JobApplications.FindAsync(id);
-					if (application is null || application.UserId != userId) return Results.NotFound();
-
 					DateTime statusDate = date is not null ? DateTime.Parse(date).AddHours(DateTime.Now.Hour).AddMinutes(DateTime.Now.Minute) : DateTime.Now;
-					application!.StatusHistories.Add(new StatusHistory { StatusId = status!, Date = statusDate });
-					await db.SaveChangesAsync();
+					await cosmos.UpdateApplicationStatusAsync(id, userId!, status, statusDate);
 				}
 				catch (Exception)
 				{
@@ -76,19 +76,16 @@ namespace JobTrackrApi
 				}
 				return TypedResults.Ok(true);
 			}).RequireAuthorization();
+
 
 			// Delete application
-			app.MapDelete("/Application/{id}", async (int id, JobTrackrContext db, ClaimsPrincipal user) =>
+			app.MapDelete("/Application/{id}", async (Guid id, ClaimsPrincipal user, [FromServices] ApplyTrackContext cosmos) =>
 			{
 				var userId = user.Identity?.Name;
 
 				try
 				{
-					var application = await db.JobApplications.FindAsync(id);
-					if (application is null || application.UserId != userId) return Results.NotFound();
-
-					db.JobApplications.Remove(application!);
-					await db.SaveChangesAsync();
+					await cosmos.DeleteApplicationAsync(id, userId!);
 				}
 				catch (Exception)
 				{
@@ -97,25 +94,25 @@ namespace JobTrackrApi
 				return TypedResults.Ok(true);
 			}).RequireAuthorization();
 
+
 			// Get report
-			app.MapGet("/Report", async (JobTrackrContext db, ClaimsPrincipal user) =>
+			app.MapGet("/Report", async (ClaimsPrincipal user, [FromServices] ApplyTrackContext cosmos) =>
 			{
 				var report = new ReportModel();
 				var userId = user.Identity?.Name;
 
 				try
 				{
-					var applications = await db.JobApplications.Where(a => a.UserId == userId)
-					.Include(a => a.StatusHistories).ToListAsync();
+					var applications = await cosmos.GetApplicationsAsync(userId!);
 
 					report.Total = applications.Count;
-					report.Applied = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.Applied);
-					report.Rejected = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.Rejected);
-					report.Screened = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.PhoneScreen);
-					report.Interviewing = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.Interviewing);
-					report.NoOffer = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.NoOffer);
-					report.Offer = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.Offer);
-					report.Accepted = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.Accepted);
+					report.Applied = applications.Count(a => a.statusHistory.OrderBy(o => o.date).Last().status == ApplicationStatus.Applied);
+					report.Rejected = applications.Count(a => a.statusHistory.OrderBy(o => o.date).Last().status == ApplicationStatus.Rejected);
+					report.Screened = applications.Count(a => a.statusHistory.OrderBy(o => o.date).Last().status == ApplicationStatus.PhoneScreen);
+					report.Interviewing = applications.Count(a => a.statusHistory.OrderBy(o => o.date).Last().status == ApplicationStatus.Interviewing);
+					report.NoOffer = applications.Count(a => a.statusHistory.OrderBy(o => o.date).Last().status == ApplicationStatus.NoOffer);
+					report.Offer = applications.Count(a => a.statusHistory.OrderBy(o => o.date).Last().status == ApplicationStatus.Offer);
+					report.Accepted = applications.Count(a => a.statusHistory.OrderBy(o => o.date).Last().status == ApplicationStatus.Accepted);
 				}
 				catch (Exception)
 				{

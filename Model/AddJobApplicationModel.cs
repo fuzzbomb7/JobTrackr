@@ -2,14 +2,14 @@
 {
 	public class AddJobApplicationModel
 	{
-		public string JobTitle { get; set; }
-		public string Company { get; set; }
-		public string? Recruiter { get; set; }
-		public string? Phone { get; set; }
-		public string? Email { get; set; }
-		public string? JobListingUrl { get; set; }
-		public string? JobDescription { get; set; }
-		public string ApplicationDate { get; set; }
-		public string UserId { get; set; }
+		public string jobTitle { get; set; }
+		public string company { get; set; }
+		public string? recruiter { get; set; }
+		public string? phone { get; set; }
+		public string? email { get; set; }
+		public string? jobListingUrl { get; set; }
+		public string? jobDescription { get; set; }
+		public string applicationDate { get; set; }
+		public string userId { get; set; }
 	}
 }

@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace JobTrackrApi;
 
-namespace JobTrackrApi;
-
-public partial class StatusHistory
+public record StatusHistory
 {
-    public int Id { get; set; }
-
-    public string StatusId { get; set; } = null!;
-
-    public DateTime Date { get; set; }
-
-    public int ApplicationId { get; set; }
-
-    public virtual JobApplication Application { get; set; } = null!;
+    public string status { get; set; } = null!;
+    public DateTime date { get; set; }
 }

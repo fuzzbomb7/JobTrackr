@@ -1,15 +1,15 @@
 ﻿namespace JobTrackrApi;
 
-public partial class JobApplication
+public record JobApplication
 {
-    public int Id { get; set; }
-    public string UserId { get; set; }
-    public string JobTitle { get; set; } = null!;
-    public string Company { get; set; } = null!;
-    public string? Recruiter { get; set; }
-    public string? Phone { get; set; }
-    public string? Email { get; set; }
-    public string? JobListingUrl { get; set; }
-    public string? JobDescription { get; set; }
-    public virtual ICollection<StatusHistory> StatusHistories { get; set; } = new List<StatusHistory>();
+    public Guid id { get; set; }
+    public string userId { get; set; } = null!;
+	public string jobTitle { get; set; } = null!;
+    public string company { get; set; } = null!;
+    public string? recruiter { get; set; }
+    public string? phone { get; set; }
+    public string? email { get; set; }
+    public string? jobListingUrl { get; set; }
+    public string? jobDescription { get; set; }
+    public virtual ICollection<StatusHistory> statusHistory { get; set; } = new List<StatusHistory>();
 }

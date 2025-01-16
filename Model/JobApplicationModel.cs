@@ -4,20 +4,20 @@ namespace JobTrackrApi.Model
 {
 	public class JobApplicationModel
 	{
-		public int Id { get; set; }
-		public string JobTitle { get; set; } = null!;
-		public string Company { get; set; } = null!;
-		public string? Recruiter { get; set; }
-		public string? Phone { get; set; }
-		public string? Email { get; set; }
-		public string? JobListingUrl { get; set; }
-		public string? JobDescription { get; set; }
-		public List<StatusHistoryModel> StatusHistory { get; set; } = new List<StatusHistoryModel>();
+		public Guid id { get; set; }
+		public string jobTitle { get; set; } = null!;
+		public string company { get; set; } = null!;
+		public string? recruiter { get; set; }
+		public string? phone { get; set; }
+		public string? email { get; set; }
+		public string? jobListingUrl { get; set; }
+		public string? jobDescription { get; set; }
+		public List<StatusHistoryModel> statusHistory { get; set; } = new List<StatusHistoryModel>();
 	}
 
 	public class StatusHistoryModel
 	{
-		public string? Status { get; set; }
-		public string? Date { get; set; }
+		public string? status { get; set; }
+		public string? date { get; set; }
 	}
 }
