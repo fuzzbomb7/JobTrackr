@@ -82,14 +82,18 @@ import ApplicationStatus from './shared/ApplicationStatus.vue'
 import { Pie } from 'vue-chartjs'
 import { Chart as ChartJS, registerables } from 'chart.js'
 import { getReport } from '@/shared/api-service'
+import { useAuth0 } from '@auth0/auth0-vue'
+
+const { getAccessTokenSilently } = useAuth0()
 
 ChartJS.register(...registerables)
 
 const report = ref<StatusReportModel>()
 defineExpose({ StatusId })
 
-onMounted(() => {
-  getReport()
+onMounted(async () => {
+  const token = await getAccessTokenSilently()
+  getReport(token)
     .then((response) => response.json())
     .then((data) => {
       report.value = data

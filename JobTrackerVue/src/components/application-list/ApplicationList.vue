@@ -64,6 +64,9 @@ import AddApplication from './AddApplication.vue'
 import ApplicationFilter from './ApplicationFilter.vue'
 import { getApplications as getApplicationsApi, postApplication } from '../../shared/api-service.ts'
 import LoadingSkeleton from '../shared/LoadingSkeleton.vue'
+import { useAuth0 } from '@auth0/auth0-vue'
+
+const { getAccessTokenSilently } = useAuth0()
 
 const applications = ref<ApplicationModel[]>([])
 const filteredApplications = ref<ApplicationModel[]>()
@@ -117,8 +120,9 @@ const onFilterUpdate = (filters: FilterUpdatePayload) => {
 }
 
 // Get or refresh all applications
-const getApplications = () => {
-  getApplicationsApi()
+const getApplications = async () => {
+  const token = await getAccessTokenSilently()
+  getApplicationsApi(token)
     .then((res) => res.json())
     .then((data) => {
       applications.value = data
@@ -128,10 +132,11 @@ const getApplications = () => {
 }
 
 // Close modal, add new application, and refetch applications
-const addApplication = (application: AddApplicationModel) => {
+const addApplication = async (application: AddApplicationModel) => {
   addApplicationModal.value?.close()
-
-  postApplication(application)
+  
+  const token = await getAccessTokenSilently()
+  postApplication(application, token)
     .then((res) => res.text())
     .then((data) => {
       if (data === 'false')

@@ -125,6 +125,9 @@ import { StatusId, type ApplicationModel } from '../../shared/models.ts'
 import ApplicationStatus from '../shared/ApplicationStatus.vue'
 import StatusSelect from '../shared/StatusSelect.vue'
 import { deleteApplication, patchApplication } from '../../shared/api-service.ts'
+import { useAuth0 } from '@auth0/auth0-vue'
+
+const { getAccessTokenSilently } = useAuth0()
 
 // Incoming application model
 const application = defineProps<ApplicationModel>()
@@ -175,10 +178,11 @@ function onStatusChangeWithDate() {
 }
 
 // Update application status
-function updateStatus(newStatus: string, newStatusDate?: string) {
+async function updateStatus(newStatus: string, newStatusDate?: string) {
   showProgress.value = true
 
-  patchApplication(application.id, newStatus, newStatusDate)
+  const token = await getAccessTokenSilently()
+  patchApplication(application.id, newStatus, token, newStatusDate)
     .then(() => {
       showProgress.value = false
       if (newStatus === 'accepted') {
@@ -197,9 +201,11 @@ function onDeleteApplication() {
   deleteModal.value?.showModal()
 }
 
-function confirmDeleteApplication() {
+async function confirmDeleteApplication() {
   deleteModal.value?.close()
-  deleteApplication(application.id)
+
+  const token = await getAccessTokenSilently()
+  deleteApplication(application.id, token)
     .then(() => {
       emit('updateApplications')
     })

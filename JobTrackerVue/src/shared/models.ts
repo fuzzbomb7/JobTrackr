@@ -1,6 +1,6 @@
 // API models
 export interface ApplicationModel {
-  id: number
+  id: string
   jobTitle: string
   company: string
   recruiter: string
