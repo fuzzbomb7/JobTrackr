@@ -10,5 +10,6 @@
 		public int Offer { get; set; }
 		public int Accepted { get; set; }
 		public bool Success { get; set; }
+		public int Total { get; set; }
 	}
 }

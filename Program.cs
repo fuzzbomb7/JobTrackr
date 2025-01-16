@@ -1,5 +1,8 @@
 using JobTrackrApi;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,22 @@ builder.Services.AddCors(options =>
 	});
 });
 
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+	options.Authority = "https://dev-uqjkfd2vwpjpaspt.us.auth0.com/";
+	options.Audience = "https://applytrack.work";
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		NameClaimType = ClaimTypes.NameIdentifier
+	};
+});
+
+builder.Services.AddAuthorization();
+
 builder.Configuration.AddEnvironmentVariables();
 
 var app = builder.Build();
@@ -35,7 +54,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseCors();
 
 ApplicationEndpoints.Map(app);

@@ -1,7 +1,9 @@
 ﻿using JobTrackrApi.Model;
 using Mapster;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace JobTrackrApi
 {
@@ -9,10 +11,17 @@ namespace JobTrackrApi
 	{
 		public static void Map(WebApplication app)
 		{
-			app.MapGet("/Applications", async (JobTrackrContext db) =>
+			// Get all applications
+			app.MapGet("/Applications", async (JobTrackrContext db, ClaimsPrincipal user) =>
 			{
-				var applications = await db.JobApplications.Include(a => a.StatusHistories).ToListAsync();
+				var userId = user.Identity?.Name;
+
+				var applications = await db.JobApplications.Where(a => a.UserId == userId)
+					.Include(a => a.StatusHistories).ToListAsync();
+
+				// Sort status history by date, then sort applications by last status date
 				applications.ForEach(applications => applications.StatusHistories = applications.StatusHistories.OrderBy(o => o.Date).ToList());
+				applications = applications.OrderBy(a => a.StatusHistories.Last().Date).ToList();
 
 				TypeAdapterConfig<StatusHistory, StatusHistoryModel>.NewConfig()
 					.Map(dest => dest.Status, src => src.StatusId)
@@ -24,10 +33,14 @@ namespace JobTrackrApi
 				var applicationsModel = applications.Adapt<List<JobApplicationModel>>();
 
 				return TypedResults.Ok(applicationsModel);
-			});
+			}).RequireAuthorization();
 
-			app.MapPost("/Application", async (AddJobApplicationModel application, [FromServices] JobTrackrContext db) =>
+			// Add application
+			app.MapPost("/Application", async (AddJobApplicationModel application, [FromServices] JobTrackrContext db, ClaimsPrincipal user) =>
 			{
+				var userId = user.Identity?.Name;
+				application.UserId = userId!;
+
 				try
 				{
 					var jobApplication = application.Adapt<JobApplication>();
@@ -41,13 +54,18 @@ namespace JobTrackrApi
 				}
 				return TypedResults.Ok(true);
 				
-			});
+			}).RequireAuthorization();
 
-			app.MapPatch("/Application/{id}/{status}", async (int id, string status, string? date, JobTrackrContext db) =>
+			// Add application status
+			app.MapPatch("/Application/{id}/{status}", async (int id, string status, string? date, JobTrackrContext db, ClaimsPrincipal user) =>
 			{
+				var userId = user.Identity?.Name;
+
 				try
 				{
 					var application = await db.JobApplications.FindAsync(id);
+					if (application is null || application.UserId != userId) return Results.NotFound();
+
 					DateTime statusDate = date is not null ? DateTime.Parse(date).AddHours(DateTime.Now.Hour).AddMinutes(DateTime.Now.Minute) : DateTime.Now;
 					application!.StatusHistories.Add(new StatusHistory { StatusId = status!, Date = statusDate });
 					await db.SaveChangesAsync();
@@ -57,13 +75,18 @@ namespace JobTrackrApi
 					return TypedResults.Ok(false);
 				}
 				return TypedResults.Ok(true);
-			});
+			}).RequireAuthorization();
 
-			app.MapDelete("/Application/{id}", async (int id, JobTrackrContext db) =>
+			// Delete application
+			app.MapDelete("/Application/{id}", async (int id, JobTrackrContext db, ClaimsPrincipal user) =>
 			{
+				var userId = user.Identity?.Name;
+
 				try
 				{
 					var application = await db.JobApplications.FindAsync(id);
+					if (application is null || application.UserId != userId) return Results.NotFound();
+
 					db.JobApplications.Remove(application!);
 					await db.SaveChangesAsync();
 				}
@@ -72,16 +95,20 @@ namespace JobTrackrApi
 					return TypedResults.Ok(false);
 				}
 				return TypedResults.Ok(true);
-			});
+			}).RequireAuthorization();
 
-			app.MapGet("/Report", async (JobTrackrContext db) =>
+			// Get report
+			app.MapGet("/Report", async (JobTrackrContext db, ClaimsPrincipal user) =>
 			{
 				var report = new ReportModel();
+				var userId = user.Identity?.Name;
 
 				try
 				{
-					var applications = await db.JobApplications.Include(a => a.StatusHistories).ToListAsync();
+					var applications = await db.JobApplications.Where(a => a.UserId == userId)
+					.Include(a => a.StatusHistories).ToListAsync();
 
+					report.Total = applications.Count;
 					report.Applied = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.Applied);
 					report.Rejected = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.Rejected);
 					report.Screened = applications.Count(a => a.StatusHistories.OrderBy(o => o.Date).Last().StatusId == ApplicationStatus.PhoneScreen);
@@ -97,7 +124,7 @@ namespace JobTrackrApi
 
 				report.Success = true;
 				return TypedResults.Ok(report);
-			});
+			}).RequireAuthorization();
 		}
 	}
 }

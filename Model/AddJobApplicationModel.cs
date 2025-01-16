@@ -10,5 +10,6 @@
 		public string? JobListingUrl { get; set; }
 		public string? JobDescription { get; set; }
 		public string ApplicationDate { get; set; }
+		public string UserId { get; set; }
 	}
 }
