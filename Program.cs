@@ -32,8 +32,8 @@ builder.Services.AddAuthentication(options =>
 	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
-	options.Authority = "https://dev-uqjkfd2vwpjpaspt.us.auth0.com/";
-	options.Audience = "https://applytrack.work";
+	options.Authority = builder.Configuration.GetValue<string>("Auth0:Authority");
+	options.Audience = builder.Configuration.GetValue<string>("Auth0:Audience");
 	options.TokenValidationParameters = new TokenValidationParameters
 	{
 		NameClaimType = ClaimTypes.NameIdentifier
